@@ -53,6 +53,12 @@ class TweetDetailsViewController: UIViewController {
         let favoriteCount = tweet.favoritesCount
         retweetCountLabel.text = "\(retweetCount)"
         favoriteCountLabel.text = "\(favoriteCount)"
+        
+        tweetLabel.sizeToFit()
+        profileImageView.layer.cornerRadius = 30
+        profileImageView.clipsToBounds = true
+        
+
 
     }
     override func didReceiveMemoryWarning() {

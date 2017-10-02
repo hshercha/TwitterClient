@@ -23,6 +23,10 @@ class TweetsViewController: UIViewController {
         })
         tableView.dataSource = self
         tableView.delegate = self
+        
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
+        self.tableView.insertSubview(refreshControl, at:0)
     }
 
     override func didReceiveMemoryWarning() {
@@ -48,6 +52,24 @@ class TweetsViewController: UIViewController {
         }
     }
     
+    func loadMoreTweets(refreshControl: UIRefreshControl?) {
+        TwitterClient.sharedInstance?.homeTimeline(success: { (tweets: [Tweet]) -> () in
+            self.tweets = tweets
+            self.tableView.reloadData()
+            
+            if let refresh = refreshControl as UIRefreshControl? {
+                refresh.endRefreshing()
+            }
+        }, failure: { (error: Error) in
+            if let refresh = refreshControl as UIRefreshControl? {
+                refresh.endRefreshing()
+            }
+        })
+    }
+    
+    @objc func refreshControlAction(_ refreshControl: UIRefreshControl) {
+        loadMoreTweets(refreshControl: refreshControl)
+    }
 }
 
 extension TweetsViewController: UITableViewDelegate, UITableViewDataSource {
