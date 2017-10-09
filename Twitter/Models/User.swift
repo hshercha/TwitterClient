@@ -9,6 +9,7 @@
 import UIKit
 
 class User: NSObject {
+    var userId: Int?
     var name: String?
     var screenname: String?
     var profileUrl:URL?
@@ -17,6 +18,7 @@ class User: NSObject {
     var dictionary: NSDictionary
     init(dictionary: NSDictionary) {
         self.dictionary = dictionary
+        userId = dictionary["id"] as? Int
         name = dictionary["name"] as? String
         screenname = dictionary["screen_name"] as? String
         

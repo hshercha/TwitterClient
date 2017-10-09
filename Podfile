@@ -7,7 +7,8 @@ target 'Twitter' do
 
   # Pods for Twitter
   pod 'AFNetworking'
-  pod 'BDBOAuth1Manager'    
+  pod 'BDBOAuth1Manager'
+  pod 'MBProgressHUD'
 
   target 'TwitterTests' do
     inherit! :search_paths

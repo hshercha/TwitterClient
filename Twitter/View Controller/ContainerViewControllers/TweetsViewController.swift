@@ -6,6 +6,7 @@
 //  Copyright © 2017 Hearsay. All rights reserved.
 //
 
+import MBProgressHUD
 import UIKit
 
 class TweetsViewController: UIViewController {
@@ -13,21 +14,24 @@ class TweetsViewController: UIViewController {
     @IBOutlet weak var tableView: UITableView!
     var tweets: [Tweet]?
     var selectedTweet: Tweet?
+    var timeline: TweetTimeline?
+    var timelineStr: String!
+    var parameters: NSDictionary = [:]
     override func viewDidLoad() {
         super.viewDidLoad()
-     TwitterClient.sharedInstance?.homeTimeline(success: { (tweets: [Tweet]) -> () in
-            self.tweets = tweets
-            self.tableView.reloadData()
-        }, failure: { (error: Error) in
-            print (error.localizedDescription)
-        })
+        if let timeline = timeline {
+            timelineStr = timeline.rawValue
+        } else {
+            timelineStr = TweetTimeline.home.rawValue
+        }
         tableView.dataSource = self
         tableView.delegate = self
-        
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
         self.tableView.insertSubview(refreshControl, at:0)
+        
     }
+    
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -53,17 +57,24 @@ class TweetsViewController: UIViewController {
     }
     
     func loadMoreTweets(refreshControl: UIRefreshControl?) {
-        TwitterClient.sharedInstance?.homeTimeline(success: { (tweets: [Tweet]) -> () in
+        loadTweets(refreshControl: refreshControl)
+    }
+    
+    func loadTweets(refreshControl: UIRefreshControl?){
+        MBProgressHUD.showAdded(to: self.tableView, animated: true)
+        TwitterClient.sharedInstance?.timeline(timelineType: timelineStr, parameters: parameters, success: { (tweets: [Tweet]) -> () in
             self.tweets = tweets
             self.tableView.reloadData()
-            
+            MBProgressHUD.hide(for: self.tableView, animated: true)
             if let refresh = refreshControl as UIRefreshControl? {
                 refresh.endRefreshing()
             }
         }, failure: { (error: Error) in
+            MBProgressHUD.hide(for: self.tableView, animated: true)
             if let refresh = refreshControl as UIRefreshControl? {
                 refresh.endRefreshing()
             }
+            print (error.localizedDescription)
         })
     }
     
@@ -85,6 +96,7 @@ extension TweetsViewController: UITableViewDelegate, UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TweetCell", for: indexPath) as! TweetViewCell
         let tweet = tweets![indexPath.row]
         cell.tweet = tweet
+        cell.delegate = self
         return cell
     }
     
@@ -101,3 +113,24 @@ extension TweetsViewController: ComposeViewControllerDelegate {
         self.tableView.reloadData()
     }
 }
+
+extension TweetsViewController: TweetCellDelegate {
+    func selectProfile(selectCell: TweetViewCell) {
+        let indexPath = tableView.indexPath(for: selectCell)!
+        let tweet = tweets![indexPath.row]
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        let profileViewController = storyboard.instantiateViewController(withIdentifier: "ProfileViewController") as! ProfileViewController
+        profileViewController.userId = tweet.userId
+        profileViewController.screenName = tweet.screenName
+        profileViewController.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "< Back", style: UIBarButtonItemStyle.plain, target: self, action: #selector(goBack(_:)))
+        profileViewController.navigationItem.leftBarButtonItem?.tintColor = .white
+        let navController = UINavigationController(rootViewController: profileViewController)
+        self.present(navController, animated: true, completion: nil)
+    }
+    
+    @objc func goBack(_ sender: UIBarButtonItem){
+        self.dismiss(animated: true, completion: nil)
+    }
+}
+
+

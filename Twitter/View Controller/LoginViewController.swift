@@ -40,5 +40,14 @@ class LoginViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "loginSegue" {
+            let hamburgerViewController = segue.destination as! HamburgerViewController
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let menuViewController = storyboard.instantiateViewController(withIdentifier: "MenuViewController") as! MenuViewController
+            menuViewController.hamburgerViewController = hamburgerViewController
+            hamburgerViewController.menuViewController = menuViewController
+        }
+    }
 
 }

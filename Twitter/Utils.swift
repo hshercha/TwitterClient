@@ -8,6 +8,12 @@
 
 import Foundation
 
+enum TweetTimeline : String {
+    case home = "home_timeline"
+    case user = "user_timeline"
+    case mentions = "mentions_timeline"
+}
+
 class Utils {
     class func timeAgoSinceDate(date:Date) -> String {
         let calendar = NSCalendar.current
